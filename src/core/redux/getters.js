@@ -30,18 +30,18 @@ export const getTotalIncomeByDate = (incomes, date) => {
   }, 0);
 };
 
-export const getMonthIncome = (incomes) => {
+export const getMonthIncome = (incomes, month) => {
   const filterIncomes = incomes.filter((income) => {
-    return moment(income.date).isSame(new Date(), 'month');
+    return moment(income.date).isSame(month, 'month');
   });
   return filterIncomes.reduce((total, item) => {
     return total + parseInt(item.price);
   }, 0);
 };
 
-export const getMonthExpense = (expense) => {
+export const getMonthExpense = (expense, month) => {
   const filterExpenses = expense.filter((income) => {
-    return moment(income.date).isSame(new Date(), 'month');
+    return moment(income.date).isSame(month, 'month');
   });
   return filterExpenses.reduce((total, item) => {
     return total + parseInt(item.price);

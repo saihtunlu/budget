@@ -9,8 +9,9 @@ import {
 } from 'react-native';
 import {Block, Text} from 'galio-framework';
 import {connect} from 'react-redux';
+import moment from 'moment';
 import Feather from 'react-native-vector-icons/Feather';
-
+import MonthPicker from 'react-native-month-year-picker';
 import Carousel, {Pagination} from 'react-native-snap-carousel';
 import LinearGradient from 'react-native-linear-gradient';
 import {
@@ -35,19 +36,54 @@ function Home(props) {
 
   const [activeSlide, setActiveSlide] = useState(0);
   const [newBalance, setNewBalance] = useState('');
+  const [expenseDate, setExpenseDate] = useState(new Date());
+  const [incomeDate, setIncomeDate] = useState(new Date());
+
+  const [showIncomeDate, setShowIncomeDate] = useState(false);
+  const [showExpenseDate, setShowExpenseDate] = useState(false);
 
   const data = [
     {
-      title: 'Balance',
+      title: (
+        <Text p color={`#fff`}>
+          Main balance
+        </Text>
+      ),
       price: Balance,
     },
     {
-      title: 'Your expenses in this month',
-      price: MonthExpense,
+      title: (
+        <Block flexDirection={'row'} alignItems={'center'}>
+          <Text p color={`#fff`}>
+            Total expenses on{' '}
+          </Text>
+          <TouchableOpacity
+            activeOpacity={0.7}
+            onPress={() => setShowExpenseDate(!showExpenseDate)}>
+            <Text p color={`#fff`} style={{textDecorationLine: 'underline'}}>
+              {moment(expenseDate).format('MMMM, YYYY')}
+            </Text>
+          </TouchableOpacity>
+        </Block>
+      ),
+      price: MonthExpense(expenseDate),
     },
     {
-      title: 'Your incomes in this month',
-      price: MonthIncome,
+      title: (
+        <Block flexDirection={'row'} alignItems={'center'}>
+          <Text p color={`#fff`}>
+            Total incomes on{' '}
+          </Text>
+          <TouchableOpacity
+            activeOpacity={0.7}
+            onPress={() => setShowIncomeDate(!showIncomeDate)}>
+            <Text p color={`#fff`} style={{textDecorationLine: 'underline'}}>
+              {moment(incomeDate).format('MMMM, YYYY')}
+            </Text>
+          </TouchableOpacity>
+        </Block>
+      ),
+      price: MonthIncome(incomeDate),
     },
   ];
   const menu = [
@@ -72,12 +108,21 @@ function Home(props) {
   ];
   const carouselRef = useRef(null);
 
+  const onChangeIncomeDate = (event, selectedDate) => {
+    setShowIncomeDate(false);
+    const currentDate = selectedDate || incomeDate;
+    setIncomeDate(currentDate);
+  };
+  const onChangeExpenseDate = (event, selectedDate) => {
+    setShowExpenseDate(false);
+    const currentDate = selectedDate || expenseDate;
+    setExpenseDate(currentDate);
+  };
+
   const renderItem = ({item, index}) => {
     return (
       <Block flex justifyContent={'center'} alignItems={'center'}>
-        <Text p color={`#fff`}>
-          {item.title}
-        </Text>
+        {item.title}
         <Text h1 bold color={`#fff`} style={{marginTop: 20}}>
           {item.price} <Text p>MMK</Text>
         </Text>
@@ -307,6 +352,20 @@ function Home(props) {
           />
         </TouchableOpacity>
       ))}
+
+      {/* renders */}
+      {showIncomeDate && (
+        <MonthPicker
+          onChange={onChangeIncomeDate}
+          value={new Date(incomeDate)}
+        />
+      )}
+      {showExpenseDate && (
+        <MonthPicker
+          onChange={onChangeExpenseDate}
+          value={new Date(expenseDate)}
+        />
+      )}
     </ScrollView>
   );
 }
@@ -317,8 +376,8 @@ const mapStateToProps = (state) => ({
   Income: state.income,
   Expense: state.expense,
   Balance: state.balance,
-  MonthIncome: getMonthIncome(state.income),
-  MonthExpense: getMonthExpense(state.expense),
+  MonthIncome: (month) => getMonthIncome(state.income, month),
+  MonthExpense: (month) => getMonthExpense(state.expense, month),
   IsLoading: isLoading(state),
   IsNewUser: isNewUser(state),
 });
